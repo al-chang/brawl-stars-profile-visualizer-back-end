@@ -11,6 +11,8 @@ app.get("/playerData/:playerID", (req, res) => {
 
   const playerID = req.params.playerID;
 
+  const handleError = (err) => console.log(err);
+
   // Secure player data
   fetch(`https://api.brawlstars.com/v1/players/%23${playerID}`, {
     method: "GET",
@@ -19,7 +21,17 @@ app.get("/playerData/:playerID", (req, res) => {
       Authorization: "Bearer " + process.env.API_KEY,
     },
   })
-    .then((response) => response.json())
+    .then((response) => {
+      // Send 404 if player does not exist
+      // If that happens then rejected promise is returned and triggers catch block at the end
+      // All that does is console.log the error
+      if (response.ok) {
+        return response.json();
+      } else {
+        res.sendStatus(404);
+        return;
+      }
+    })
     .then((data) => {
       playerData = data;
       // Secure battlelog data
@@ -41,7 +53,8 @@ app.get("/playerData/:playerID", (req, res) => {
             ...playerData,
             battles: battleLogData.items,
           });
-        });
+        })
+        .catch(handleError);
     });
 });
 
