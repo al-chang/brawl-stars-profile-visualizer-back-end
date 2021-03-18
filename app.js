@@ -3,6 +3,7 @@ const fetch = require("node-fetch");
 const app = express();
 require("dotenv").config();
 const port = 5000;
+const apiKey = process.env.API_KEY;
 
 // Retrieve data about the player and their battlelog
 app.get("/playerData/:playerID", (req, res) => {
@@ -18,7 +19,7 @@ app.get("/playerData/:playerID", (req, res) => {
     method: "GET",
     headers: {
       Accept: "application/json",
-      Authorization: "Bearer " + process.env.API_KEY,
+      Authorization: "Bearer " + apiKey,
     },
   })
     .then((response) => {
@@ -41,7 +42,7 @@ app.get("/playerData/:playerID", (req, res) => {
           method: "GET",
           headers: {
             Accept: "application/json",
-            Authorization: "Bearer " + process.env.API_KEY,
+            Authorization: "Bearer " + apiKey,
           },
         }
       )
@@ -65,7 +66,7 @@ app.get("/playerData/:playerID", (req, res) => {
 //     method: "GET",
 //     headers: {
 //       Accept: "application/json",
-//       Authorization: "Bearer " + process.env.API_KEY,
+//       Authorization: "Bearer " + apiKey,
 //     },
 //   })
 //     .then((response) => response.json())
@@ -81,7 +82,7 @@ app.get("/clubData/:clubID", (req, res) => {
     method: "GET",
     headers: {
       Accept: "application/json",
-      Authorization: "Bearer " + process.env.API_KEY,
+      Authorization: "Bearer " + apiKey,
     },
   })
     .then((response) => response.json())
