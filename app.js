@@ -1,9 +1,11 @@
+const { response } = require("express");
 const express = require("express");
 const fetch = require("node-fetch");
 const app = express();
 require("dotenv").config();
 const port = 5000;
 const apiKey = process.env.API_KEY;
+const PlayerModel = require("./PlayerModel");
 
 // Retrieve data about the player and their battlelog
 app.get("/playerData/:playerID", (req, res) => {
@@ -48,13 +50,21 @@ app.get("/playerData/:playerID", (req, res) => {
       )
         .then((response) => response.json())
         .then((data) => {
-          battleLogData = data;
+          let battleLogData = data;
+          let model = new PlayerModel.PlayerModel({...playerData, battles: battleLogData.items});
+          let response = {
+            ...playerData, 
+            trophiesOverTime: model.TrophiesOverTime(),
+            recentGameModes: model.RecentGameModes(),
+            winLose: model.NumberWins(),
+            recentBrawlers: model.RecentBrawlers(),
+            brawlerData: model.GetBrawlersTrophies()
+           };
+
           // Combine battlelog and player data and send back as single object
-          res.send({
-            ...playerData,
-            battles: battleLogData.items,
-          });
+          res.send(response);
         })
+        .then(() => console.log("Request completed."))
         .catch(handleError);
     });
 });
