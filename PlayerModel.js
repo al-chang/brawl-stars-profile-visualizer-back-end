@@ -56,7 +56,7 @@ class PlayerModel {
       let gamesStarPlayer = 0;
       this.battles.forEach((game) => {
         if ("starPlayer" in game.battle) {
-          if (game.battle.starPlayer.tag === this.tag) {
+          if (game.battle.starPlayer != null && game.battle.starPlayer.tag === this.tag) {
             gamesStarPlayer += 1;
           }
         }

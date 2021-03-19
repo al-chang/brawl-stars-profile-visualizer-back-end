@@ -10,7 +10,6 @@ const PlayerModel = require("./PlayerModel");
 // Retrieve data about the player and their battlelog
 app.get("/playerData/:playerID", (req, res) => {
   let playerData = {};
-  let battleLogData = {};
 
   const playerID = req.params.playerID;
 
@@ -51,15 +50,19 @@ app.get("/playerData/:playerID", (req, res) => {
         .then((response) => response.json())
         .then((data) => {
           let battleLogData = data;
-          let model = new PlayerModel.PlayerModel({...playerData, battles: battleLogData.items});
+          let model = new PlayerModel.PlayerModel({
+            ...playerData,
+            battles: battleLogData.items,
+          });
           let response = {
-            ...playerData, 
+            ...playerData,
             trophiesOverTime: model.TrophiesOverTime(),
             recentGameModes: model.RecentGameModes(),
             winLose: model.NumberWins(),
             recentBrawlers: model.RecentBrawlers(),
-            brawlerData: model.GetBrawlersTrophies()
-           };
+            brawlerData: model.GetBrawlersTrophies(),
+            starPlayerCount: model.StarPlayerCount(),
+          };
 
           // Combine battlelog and player data and send back as single object
           res.send(response);
@@ -69,19 +72,51 @@ app.get("/playerData/:playerID", (req, res) => {
     });
 });
 
-// // Retrieve player battlelog data
-// app.get("/playerData/:playerID/battlelog", (req, res) => {
-//   const playerID = req.params.playerID;
-//   fetch("https://api.brawlstars.com/v1/players/%23" + playerID + "/battlelog", {
-//     method: "GET",
-//     headers: {
-//       Accept: "application/json",
-//       Authorization: "Bearer " + apiKey,
-//     },
-//   })
-//     .then((response) => response.json())
-//     .then((data) => res.send(data));
-// });
+// Retrieve player battlelog data
+app.get("/playerData/:playerID/battlelog", (req, res) => {
+  const playerID = req.params.playerID;
+  fetch("https://api.brawlstars.com/v1/players/%23" + playerID + "/battlelog", {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: "Bearer " + apiKey,
+    },
+  })
+    .then((response) => {
+      // Send 404 if player does not exist
+      // If that happens then rejected promise is returned and triggers catch block at the end
+      // All that does is console.log the error
+      if (response.ok) {
+        return response.json();
+      } else {
+        res.sendStatus(404);
+        return;
+      }
+    })
+    .then((data) => {
+      battlelog = data;
+      fetch("https://api.brawlstars.com/v1/players/%23" + playerID, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + apiKey,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          let model = new PlayerModel.PlayerModel({
+            ...data,
+            battles: battlelog.items,
+          });
+          let response = {
+            battles: battlelog,
+            ...data,
+            starPlayerCount: model.StarPlayerCount()
+          };
+          res.send(response);
+        });
+    });
+});
 
 // Club support
 app.get("/clubData/:clubID", (req, res) => {
