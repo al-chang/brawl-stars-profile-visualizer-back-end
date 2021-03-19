@@ -62,6 +62,7 @@ app.get("/playerData/:playerID", (req, res) => {
             recentBrawlers: model.RecentBrawlers(),
             brawlerData: model.GetBrawlersTrophies(),
             starPlayerCount: model.StarPlayerCount(),
+            ...battleLogData
           };
 
           // Combine battlelog and player data and send back as single object
